@@ -29,6 +29,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		// 1️⃣ Login
 		await page.goto("https://erp.psit.ac.in/", {
 			waitUntil: "networkidle2",
+			timeout: 60000,
 		});
 		await page.type("#emailAddress", username);
 		await page.type("#password", password);
@@ -40,6 +41,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		// 2️⃣ Scrape Attendance
 		await page.goto("https://erp.psit.ac.in/Student/MyAttendanceDetail", {
 			waitUntil: "networkidle2",
+			timeout: 60000,
 		});
 		const today = new Date();
 		const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
@@ -76,6 +78,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		// 3️⃣ Scrape Timetable
 		await page.goto("https://erp.psit.ac.in/Student/MyTimeTable", {
 			waitUntil: "networkidle2",
+			timeout: 60000,
 		});
 		const timetable = await page.evaluate((todayDayName) => {
 			const rows = Array.from(
@@ -143,6 +146,7 @@ export async function checkCredentials(username, password) {
 
 		await page.goto("https://erp.psit.ac.in/", {
 			waitUntil: "networkidle2",
+			timeout: 60000,
 		});
 
 		// Fill login form

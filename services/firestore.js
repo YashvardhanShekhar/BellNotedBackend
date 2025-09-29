@@ -33,19 +33,31 @@ export const addUser = async (id, encryptedPass, token) => {
 	);
 	console.log(`User ${id} added/updated successfully.`);
 };
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./firebaseConfig";
 
-// *** CHANGE 2: Remove 'db' from the function's arguments. It will use the 'db' from the module scope. ***
+export const fetchUser = async (id) => {
+	try {
+		const userRef = doc(db, "users", id); // reference to specific doc
+		const userSnap = await getDoc(userRef);
+		return (userSnap.exists()) ? userSnap.data() : null;
+
+	} catch (error) {
+		console.error("Error fetching user:", error);
+		throw error;
+	}
+};
+
+
 export const fetchAllUsers = async () => {
 	const usersCollectionRef = collection(db, "users"); // Uses the module-scoped 'db'
 	const querySnapshot = await getDocs(usersCollectionRef);
 
 	const users = [];
 	querySnapshot.forEach((userDoc) => {
-		// Renamed 'doc' to 'userDoc' for clarity
 		const data = userDoc.data();
 		users.push({
 			id: userDoc.id,
-			// *** CHANGE 3: Read 'password' field, not 'pass' ***
 			pass: data.password || null, // Now correctly reads the 'password' field
 			token: data.token || null,
 		});

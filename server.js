@@ -9,11 +9,28 @@ import {
 	scrapeTodayAbsentsWithFaculty,
 } from "./services/pupppeteer.js";
 import { sendPushNotification } from "./services/sendNotification.js";
-import { addUser, fetchAllUsers } from "./services/firestore.js";
+import { addUser, fetchAllUsers, fetchUser } from "./services/firestore.js";
 
 const app = express();
 app.use(bodyParser.json());
 
+app.get("/check/:userId", async (req, res) => {
+	const uid = req.params.userId;
+	const user = await fetchUser(uid);
+	let { id, pass, token } = user;
+	pass = decryptPassword(pass);
+	const isValid = await checkCredentials(id, pass);
+	if (!isValid) {
+		await sendPushNotification(
+			"Your have changed your password",
+			"please re-register your credentials",
+			token
+		);
+	}
+	// Check attendance for today
+	const absentPeriods = await scrapeTodayAbsentsWithFaculty(id, pass);
+	await sendPushNotification(absentPeriods, token);
+});
 
 app.post("/register", async (req, res) => {
 	try {
@@ -61,36 +78,7 @@ app.get("/checkAllUsers", async (req, res) => {
 			}
 			// Check attendance for today
 			const absentPeriods = await scrapeTodayAbsentsWithFaculty(id, pass);
-
-			if (absentPeriods.length > 0) {
-				// Format periods string naturally
-				const periods = absentPeriods.map((item) => item.period);
-
-				let periodsString = "";
-				if (periods.length === 1) {
-					periodsString = `lecture ${periods[0]}`;
-				} else if (periods.length === 2) {
-					periodsString = `lectures ${periods[0]} and ${periods[1]}`;
-				} else {
-					const last = periods.pop();
-					periodsString = `lectures ${periods.join(
-						", "
-					)} and ${last}`;
-				}
-
-				// Send notification if user has absents
-				await sendPushNotification(
-					`You have ${absentPeriods.length} absent${absentPeriods.length!=1 && "s"} today`,
-					`in ${periodsString}`,
-					token
-				);
-			} else {
-				await sendPushNotification(
-					"Perfect Attendance Today! ✨",
-					"0 absents today. Let's keep this streak going!",
-					token
-				);
-			}
+			await sendPushNotification(absentPeriods, token);
 		}
 
 		return res.json({

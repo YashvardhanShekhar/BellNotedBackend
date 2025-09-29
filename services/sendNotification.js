@@ -20,14 +20,40 @@ async function getAccessToken() {
 	return tokenResponse.token;
 }
 
-export async function sendPushNotification(title, body, token) {
+export async function sendPushNotification(absentPeriods, token) {
 	try {
 		const accessToken = await getAccessToken();
+		let title, body;
+
+		if (absentPeriods.length > 0) {
+			const periods = absentPeriods.map((item) => item.period);
+
+			let periodsString = "";
+			if (periods.length === 1) {
+				periodsString = `lecture ${periods[0]}`;
+			} else if (periods.length === 2) {
+				periodsString = `lectures ${periods[0]} and ${periods[1]}`;
+			} else {
+				const last = periods.pop();
+				periodsString = `lectures ${periods.join(", ")} and ${last}`;
+			}
+
+			title = `You have ${absentPeriods.length} absent${
+				absentPeriods.length != 1 && "s"
+			} today`;
+			body = `in ${periodsString}`;
+		} else {
+			title = "Perfect Attendance Today! ✨";
+			body = "0 absents today. Let's keep this streak going!";
+		}
 
 		const message = {
 			message: {
 				token,
 				notification: { title, body },
+				data: {
+					absentPeriods: JSON.stringify(absentPeriods || []),
+				},
 			},
 		};
 
