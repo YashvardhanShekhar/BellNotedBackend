@@ -23,18 +23,22 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app); // This 'db' is now globally available in this module
 
 export const addUser = async (id, encryptedPass, token) => {
-	await setDoc(
-		doc(db, "users", id),
-		{
-			password: encryptedPass, // Storing as 'password'
-			token: token,
-		},
-		{ merge: true }
-	);
-	console.log(`User ${id} added/updated successfully.`);
+	try {
+		const userRef = doc(db, "users", id);
+		await setDoc(
+			userRef,
+			{
+				password: encryptedPass,
+				token: token,
+			},
+			{ merge: true } // keeps old fields, updates new ones
+		);
+		console.log(`User ${id} added/updated successfully.`);
+	} catch (err) {
+		console.error(`Error adding/updating user ${id}:`, err);
+		throw err;
+	}
 };
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "./firebaseConfig";
 
 export const fetchUser = async (id) => {
 	try {
