@@ -55,15 +55,19 @@ export async function sendPushNotification(absentPeriods, token) {
 		}
 
 		// Build FCM message
-		const message = {
+		let message = {
 			message: {
 				token: token,
 				notification: { title, body },
+				apns: { payload: { aps: { badge: absentPeriods.length } } },
+				android: {
+					notification: { notificationCount: absentPeriods.length },
+				},
 				data: { absentPeriods: JSON.stringify(absentPeriods || []) },
 			},
 		};
 
-		const response = await fetch(FCM_ENDPOINT, {
+		let response = await fetch(FCM_ENDPOINT, {
 			method: "POST",
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
@@ -71,6 +75,27 @@ export async function sendPushNotification(absentPeriods, token) {
 			},
 			body: JSON.stringify(message),
 		});
+
+		// message = {
+		// 	message: {
+		// 		token: token,
+		// 		notification: { title, body },
+		// 		apns: { payload: { aps: { badge: absentPeriods.length } } },
+		// 		android: {
+		// 			notification: { notificationCount: absentPeriods.length },
+		// 		},
+		// 		data: { absentPeriods: JSON.stringify(absentPeriods || []) },
+		// 	},
+		// };
+
+		// response = await fetch(FCM_ENDPOINT, {
+		// 	method: "POST",
+		// 	headers: {
+		// 		Authorization: `Bearer ${accessToken}`,
+		// 		"Content-Type": "application/json",
+		// 	},
+		// 	body: JSON.stringify(message),
+		// });
 
 		const data = await response.json();
 
