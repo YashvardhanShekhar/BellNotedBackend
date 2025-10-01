@@ -1,13 +1,18 @@
 import axios from "axios";
+import { sendPushNotification } from "./services/sendNotification.js";
 
 async function test() {
-	const res = await axios.post("https://bellnotedbackend.onrender.com/register", {
-		id: "2301640100439",
-		password: "password",
-		fcmToken: "c64y8NOaQhOBRw4KPG8mFw:APA91bHMAZcFIgdUfZDg5NzyIFJztpY-7nOoxShbEEqvqDn7aTNKdq4aG1CnR7B00c30YY5pgSvDD61udow_E-1L6NEdUjiaCG0Mbj88qKcbv-ZOfnpbCBE",
-	});
-	const result = parse.JSON(res)
-	console.log(result.data.data);
+	await sendPushNotification(
+		[
+			{ period: 1, faculty: "Deepak Gupta" },
+			{ period: 2, faculty: "Deepak Gupta" },
+			{ period: 5, faculty: "Vipin Kumar Jaiswal" },
+			{ period: 6, faculty: "Vipin Kumar Jaiswal" },
+			{ period: 7, faculty: "Subhash Singh Parihar" },
+			{ period: 8, faculty: "Subhash Singh Parihar" },
+		],
+		"efKSnQxXSbi9Dne4r8MFvM:APA91bHeob2qsB-atf7B85qJAykEUd0lY42pb7U1uNAct0aUNmmeN5xTJSrSr0Y5WdanJn80QAS0TVRowq2MHLl3xrH4ZOaxfkSsMcSiBRCpznhaNgQCMxc"
+	);
 }
 
 test();

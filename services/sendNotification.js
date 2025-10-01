@@ -6,7 +6,7 @@ dotenv.config();
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
 
-const PROJECT_ID = "bellnoted";
+const PROJECT_ID = "bellnoted"; // Make sure this matches Firebase Project ID
 const FCM_ENDPOINT = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
 
 async function getAccessToken() {
@@ -20,26 +20,33 @@ async function getAccessToken() {
 	return tokenResponse.token;
 }
 
+/**
+ * Sends a push notification to a device via FCM
+ * {Array} absentPeriods - Array of absent period objects [{period: 1}, ...]
+ * {string} token - FCM registration token
+ */
 export async function sendPushNotification(absentPeriods, token) {
+	if (!token || typeof token !== "string") {
+		throw new Error("Invalid FCM token provided");
+	}
+
 	try {
 		const accessToken = await getAccessToken();
-		let title, body;
 
+		// Build notification text
+		let title, body;
 		if (absentPeriods.length > 0) {
 			const periods = absentPeriods.map((item) => item.period);
-
 			let periodsString = "";
-			if (periods.length === 1) {
-				periodsString = `lecture ${periods[0]}`;
-			} else if (periods.length === 2) {
+			if (periods.length === 1) periodsString = `lecture ${periods[0]}`;
+			else if (periods.length === 2)
 				periodsString = `lectures ${periods[0]} and ${periods[1]}`;
-			} else {
+			else {
 				const last = periods.pop();
 				periodsString = `lectures ${periods.join(", ")} and ${last}`;
 			}
-
 			title = `You have ${absentPeriods.length} absent${
-				absentPeriods.length != 1 && "s"
+				absentPeriods.length !== 1 ? "s" : ""
 			} today`;
 			body = `in ${periodsString}`;
 		} else {
@@ -47,13 +54,12 @@ export async function sendPushNotification(absentPeriods, token) {
 			body = "0 absents today. Let's keep this streak going!";
 		}
 
+		// Build FCM message
 		const message = {
 			message: {
-				token,
+				token: token,
 				notification: { title, body },
-				data: {
-					absentPeriods: JSON.stringify(absentPeriods || []),
-				},
+				data: { absentPeriods: JSON.stringify(absentPeriods || []) },
 			},
 		};
 
@@ -67,7 +73,20 @@ export async function sendPushNotification(absentPeriods, token) {
 		});
 
 		const data = await response.json();
-		console.log("FCM response:", data);
+
+		// Check for common errors
+		if (data.error) {
+			if (data.error.status === "NOT_FOUND") {
+				console.error(
+					"FCM token not found. Make sure it's valid and registered."
+				);
+			} else {
+				console.error("FCM error:", data.error);
+			}
+			return null;
+		}
+
+		console.log("FCM sent successfully:", data);
 		return data;
 	} catch (err) {
 		console.error("Error sending push notification:", err);

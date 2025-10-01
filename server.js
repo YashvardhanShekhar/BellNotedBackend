@@ -15,26 +15,41 @@ const app = express();
 app.use(bodyParser.json());
 
 app.get("/check/:userId", async (req, res) => {
-	const uid = req.params.userId;
-	const user = await fetchUser(uid);
-	let { id, pass, token } = user;
-	pass = decryptPassword(pass);
-	const isValid = await checkCredentials(id, pass);
-	if (!isValid) {
-		await sendPushNotification(
-			"Your have changed your password",
-			"please re-register your credentials",
-			token
-		);
+	try {
+		const uid = req.params.userId;
+		const user = await fetchUser(uid);
+		if (user == null)
+			return res
+				.status(500)
+				.json({ success: false, error: "no such user exists" });
+
+		let { id, password, token } = user;
+
+		const pass = decryptPassword(password);
+		const isValid = await checkCredentials(id, pass);
+		console.log(isValid);
+		if (!isValid) {
+			await sendPushNotification(
+				"Your have changed your password",
+				"please re-register your credentials",
+				token
+			);
+		}
+		// Check attendance for today
+		const absentPeriods = await scrapeTodayAbsentsWithFaculty(id, pass);
+		console.log(absentPeriods);
+		await sendPushNotification(absentPeriods, token);
+		return res.json({ success: true });
+	} catch (error) {
+		console.error("Error in checking:", error);
+		return res.status(500).json({ success: false, error: error.message });
 	}
-	// Check attendance for today
-	const absentPeriods = await scrapeTodayAbsentsWithFaculty(id, pass);
-	await sendPushNotification(absentPeriods, token);
 });
 
 app.post("/register", async (req, res) => {
 	try {
 		const { id, password, fcmToken } = req.body;
+		console.log("-"+id+"-")
 
 		if (!id || !password || !fcmToken) {
 			return res
@@ -78,6 +93,7 @@ app.get("/checkAllUsers", async (req, res) => {
 			}
 			// Check attendance for today
 			const absentPeriods = await scrapeTodayAbsentsWithFaculty(id, pass);
+			console.log(absentPeriods);
 			await sendPushNotification(absentPeriods, token);
 		}
 

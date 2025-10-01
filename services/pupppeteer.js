@@ -45,6 +45,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		});
 		const today = new Date();
 		const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
+		// const todayStr = "2025-08-07"; // YYYY-MM-DD
 		const dayNames = [
 			"Sunday",
 			"Monday",
@@ -108,7 +109,6 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 			period: a.periodIndex,
 			faculty: timetable[a.periodIndex] || "Unknown",
 		}));
-		console.log(finalAbsentData)
 
 		return finalAbsentData;
 	} catch (err) {

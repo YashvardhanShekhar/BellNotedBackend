@@ -4,6 +4,7 @@ import {
 	collection,
 	doc,
 	setDoc,
+	getDoc,
 	getDocs,
 } from "firebase/firestore";
 import dotenv from "dotenv";
@@ -42,10 +43,17 @@ export const addUser = async (id, encryptedPass, token) => {
 
 export const fetchUser = async (id) => {
 	try {
-		const userRef = doc(db, "users", id); // reference to specific doc
+		const userRef = doc(db, "users", id);
 		const userSnap = await getDoc(userRef);
-		return (userSnap.exists()) ? userSnap.data() : null;
 
+		if (userSnap.exists()) {
+			return {
+				id: userSnap.id, 
+				...userSnap.data(),
+			};
+		} else {
+			return null;
+		}
 	} catch (error) {
 		console.error("Error fetching user:", error);
 		throw error;
