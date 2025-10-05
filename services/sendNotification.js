@@ -20,11 +20,6 @@ async function getAccessToken() {
 	return tokenResponse.token;
 }
 
-/**
- * Sends a push notification to a device via FCM
- * {Array} absentPeriods - Array of absent period objects [{period: 1}, ...]
- * {string} token - FCM registration token
- */
 export async function sendPushNotification(absentPeriods, token) {
 	if (!token || typeof token !== "string") {
 		throw new Error("Invalid FCM token provided");

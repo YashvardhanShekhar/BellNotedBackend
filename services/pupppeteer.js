@@ -6,22 +6,19 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 	let browser;
 	try {
 		const platform = os.platform();
-
-		let executablePath;
-		if (platform === "win32") {
-			executablePath = path.resolve(
-				".cache/puppeteer/chrome/win64-140.0.7339.207/chrome-win64/chrome.exe"
-			);
-		} else {
-			executablePath = path.resolve(
-				".cache/puppeteer/chrome/linux-140.0.7339.207/chrome-linux64/chrome"
-			);
-		}
+		const chromePath =
+			platform === "win32"
+				? path.resolve(
+						".cache/puppeteer/chrome/win64-141.0.7390.54/chrome-win64/chrome.exe"
+				  )
+				: path.resolve(
+						".cache/puppeteer/chrome/linux-141.0.7390.54/chrome-linux64/chrome"
+				  );
 
 		browser = await puppeteer.launch({
 			headless: true,
+			executablePath: chromePath,
 			args: ["--no-sandbox", "--disable-setuid-sandbox"],
-			executablePath,
 		});
 
 		const page = await browser.newPage();
@@ -29,7 +26,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		// 1️⃣ Login
 		await page.goto("https://erp.psit.ac.in/", {
 			waitUntil: "networkidle2",
-			// timeout: 60000,
+			timeout: 60000,
 		});
 		await page.type("#emailAddress", username);
 		await page.type("#password", password);
@@ -41,7 +38,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		// 2️⃣ Scrape Attendance
 		await page.goto("https://erp.psit.ac.in/Student/MyAttendanceDetail", {
 			waitUntil: "networkidle2",
-			// timeout: 60000,
+			timeout: 60000,
 		});
 		const today = new Date();
 		const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
@@ -79,7 +76,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		// 3️⃣ Scrape Timetable
 		await page.goto("https://erp.psit.ac.in/Student/MyTimeTable", {
 			waitUntil: "networkidle2",
-			// timeout: 60000,
+			timeout: 60000,
 		});
 		const timetable = await page.evaluate((todayDayName) => {
 			const rows = Array.from(
@@ -103,7 +100,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 			}
 			return map; // key = periodIndex (1-based), value = faculty
 		}, todayDayName);
-		
+
 		// 4️⃣ Combine absent entries with faculty
 		const finalAbsentData = absentEntries.map((a) => ({
 			period: a.periodIndex,
@@ -123,30 +120,26 @@ export async function checkCredentials(username, password) {
 	let browser;
 	try {
 		const platform = os.platform();
-
-		let executablePath;
-		if (platform === "win32") {
-			executablePath = path.resolve(
-				".cache/puppeteer/chrome/win64-140.0.7339.207/chrome-win64/chrome.exe"
-			);
-		} else {
-			executablePath = path.resolve(
-				".cache/puppeteer/chrome/linux-140.0.7339.207/chrome-linux64/chrome"
-			);
-		}
+		const chromePath =
+			platform === "win32"
+				? path.resolve(
+						".cache/puppeteer/chrome/win64-141.0.7390.54/chrome-win64/chrome.exe"
+				  )
+				: path.resolve(
+						".cache/puppeteer/chrome/linux-141.0.7390.54/chrome-linux64/chrome"
+				  );
 
 		browser = await puppeteer.launch({
 			headless: true,
+			executablePath: chromePath,
 			args: ["--no-sandbox", "--disable-setuid-sandbox"],
-			executablePath,
 		});
-		console.log("Chromium path:", puppeteer.executablePath());
 
 		const page = await browser.newPage();
 
 		await page.goto("https://erp.psit.ac.in/", {
 			waitUntil: "networkidle2",
-			// timeout: 60000,
+			timeout: 60000,
 		});
 
 		// Fill login form
