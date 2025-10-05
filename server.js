@@ -78,6 +78,8 @@ app.post("/register", async (req, res) => {
 
 app.get("/checkAllUsers", async (req, res) => {
 	try {
+		res.status(200).send("Task started");
+
 		const users = await fetchAllUsers(); // [{id, pass, token}, ...]
 		for (const user of users) {
 			let { id, pass, token } = user;
