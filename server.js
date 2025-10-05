@@ -78,7 +78,7 @@ app.post("/register", async (req, res) => {
 
 app.get("/checkAllUsers", async (req, res) => {
 	try {
-		res.status(200).send("Task started");
+		// res.status(200).send("Task started");
 
 		const users = await fetchAllUsers(); // [{id, pass, token}, ...]
 		for (const user of users) {
@@ -95,17 +95,13 @@ app.get("/checkAllUsers", async (req, res) => {
 			}
 			// Check attendance for today
 			const absentPeriods = await scrapeTodayAbsentsWithFaculty(id, pass);
-			console.log(absentPeriods);
+			console.log(id+" : "+[...absentPeriods]);
 			await sendPushNotification(absentPeriods, token);
 		}
 
-		return res.json({
-			success: true,
-			message: "Attendance check completed",
-		});
 	} catch (error) {
 		console.error("Error checking all users:", error);
-		return res.status(500).json({ success: false, error: error.message });
+		res.status(200).send(error);
 	}
 });
 
