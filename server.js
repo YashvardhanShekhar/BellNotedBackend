@@ -105,6 +105,10 @@ app.get("/checkAllUsers", async (req, res) => {
 	}
 });
 
+app.get("/", (req, res) => {
+	res.send("Server is running ✅");
+});
+
 app.listen(3000, () => {
 	console.log("✅ API running on http://localhost:3000");
 });
