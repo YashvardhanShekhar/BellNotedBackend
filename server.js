@@ -101,7 +101,8 @@ app.get("/checkAllUsers", async (req, res) => {
 
 	} catch (error) {
 		console.error("Error checking all users:", error);
-		res.status(200).send(error);
+		// res.status(200).send(error);
+		res.status(500).json({ error: err.message });
 	}
 });
 
