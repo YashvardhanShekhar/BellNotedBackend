@@ -106,10 +106,9 @@ export async function sendPushNotification(absentPeriods, token) {
 			return null;
 		}
 
-		console.log("FCM sent successfully:", data);
-		return data;
+		return true;
 	} catch (err) {
 		console.error("Error sending push notification:", err);
-		throw err;
+		return false;
 	}
 }

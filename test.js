@@ -7,7 +7,7 @@ async function test() {
 			// { period: 1, faculty: "Deepak Gupta" },
 			// { period: 2, faculty: "Deepak Gupta" },
 			// { period: 5, faculty: "Vipin Kumar Jaiswal" },
-			// { period: 6, faculty: "Vipin Kumar Jaiswal" },
+			{ period: 6, faculty: "Vipin Kumar Jaiswal" },
 			// { period: 7, faculty: "Subhash Singh Parihar" },
 			{ period: 8, faculty: "Subhash Singh Parihar" },
 		],
