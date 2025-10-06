@@ -2,6 +2,18 @@ import puppeteer from "puppeteer";
 import path from "path";
 import os from "os";
 
+async function safeGoto( page, url, options, retries = 3) {
+	for (let i = 0; i < retries; i++) {
+		try {
+			await page.goto(url, options);
+			return;
+		} catch (err) {
+			console.log(`Retry ${i + 1}/${retries} for ${url}`);
+			if (i === retries - 1) throw err;
+		}
+	}
+}
+
 export async function scrapeTodayAbsentsWithFaculty(username, password) {
 	let browser;
 	try {
@@ -24,22 +36,29 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		const page = await browser.newPage();
 
 		// 1️⃣ Login
-		await page.goto("https://erp.psit.ac.in/", {
-			waitUntil: "networkidle2",
-			timeout: 60000,
+		await safeGoto(page, "https://erp.psit.ac.in/", {
+			waitUntil: "domcontentloaded",
+			timeout: 180000,
 		});
 		await page.type("#emailAddress", username);
 		await page.type("#password", password);
 		await Promise.all([
 			page.click(".btn-theme"),
-			page.waitForNavigation({ waitUntil: "networkidle2" }),
+			page.waitForNavigation({
+				waitUntil: "domcontentloaded",
+				timeout: 180000,
+			}),
 		]);
 
 		// 2️⃣ Scrape Attendance
-		await page.goto("https://erp.psit.ac.in/Student/MyAttendanceDetail", {
-			waitUntil: "networkidle2",
-			timeout: 60000,
-		});
+		await safeGoto(
+			page,
+			"https://erp.psit.ac.in/Student/MyAttendanceDetail",
+			{
+				waitUntil: "domcontentloaded",
+				timeout: 180000,
+			}
+		);
 		const today = new Date();
 		const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
 		// const todayStr = "2025-08-07"; // YYYY-MM-DD
@@ -74,9 +93,9 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		}, todayStr);
 
 		// 3️⃣ Scrape Timetable
-		await page.goto("https://erp.psit.ac.in/Student/MyTimeTable", {
-			waitUntil: "networkidle2",
-			timeout: 60000,
+		await safeGoto(page, "https://erp.psit.ac.in/Student/MyTimeTable", {
+			waitUntil: "domcontentloaded",
+			timeout: 180000,
 		});
 		const timetable = await page.evaluate((todayDayName) => {
 			const rows = Array.from(
@@ -137,9 +156,9 @@ export async function checkCredentials(username, password) {
 
 		const page = await browser.newPage();
 
-		await page.goto("https://erp.psit.ac.in/", {
-			waitUntil: "networkidle2",
-			timeout: 60000,
+		await safeGoto(page, "https://erp.psit.ac.in/", {
+			waitUntil: "domcontentloaded",
+			timeout: 180000,
 		});
 
 		// Fill login form
@@ -149,7 +168,10 @@ export async function checkCredentials(username, password) {
 		// Click sign in and wait for navigation
 		await Promise.all([
 			page.click(".btn-theme"),
-			page.waitForNavigation({ waitUntil: "networkidle2" }),
+			page.waitForNavigation({
+				waitUntil: "domcontentloaded",
+				timeout: 180000,
+			}),
 		]);
 
 		// Check if still on login page (login failed)

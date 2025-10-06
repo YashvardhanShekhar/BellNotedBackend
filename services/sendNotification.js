@@ -54,10 +54,6 @@ export async function sendPushNotification(absentPeriods, token) {
 			message: {
 				token: token,
 				notification: { title, body },
-				apns: { payload: { aps: { badge: absentPeriods.length } } },
-				android: {
-					notification: { notificationCount: absentPeriods.length },
-				},
 				data: { absentPeriods: JSON.stringify(absentPeriods || []) },
 			},
 		};
