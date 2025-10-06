@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 import path from "path";
 import os from "os";
 
-async function safeGoto( page, url, options, retries = 3) {
+async function safeGoto(page, url, options, retries = 3) {
 	for (let i = 0; i < retries; i++) {
 		try {
 			await page.goto(url, options);
@@ -30,7 +30,16 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		browser = await puppeteer.launch({
 			headless: true,
 			executablePath: chromePath,
-			args: ["--no-sandbox", "--disable-setuid-sandbox"],
+			args: [
+				"--no-sandbox",
+				"--disable-setuid-sandbox",
+				"--disable-dev-shm-usage", // less tmpfs use
+				"--disable-gpu",
+				"--single-process",
+				"--no-zygote",
+			],
+			protocolTimeout: 180000, // let Puppeteer wait longer
+			timeout: 0, // disable the 30s WS endpoint startup timeout
 		});
 
 		const page = await browser.newPage();
@@ -151,7 +160,16 @@ export async function checkCredentials(username, password) {
 		browser = await puppeteer.launch({
 			headless: true,
 			executablePath: chromePath,
-			args: ["--no-sandbox", "--disable-setuid-sandbox"],
+			args: [
+				"--no-sandbox",
+				"--disable-setuid-sandbox",
+				"--disable-dev-shm-usage", // less tmpfs use
+				"--disable-gpu",
+				"--single-process",
+				"--no-zygote",
+			],
+			protocolTimeout: 180000, // let Puppeteer wait longer
+			timeout: 0, // disable the 30s WS endpoint startup timeout
 		});
 
 		const page = await browser.newPage();
