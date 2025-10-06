@@ -49,7 +49,7 @@ app.get("/check/:userId", async (req, res) => {
 app.post("/register", async (req, res) => {
 	try {
 		const { id, password, fcmToken } = req.body;
-		console.log("-"+id+"-")
+		console.log("-" + id + "-");
 
 		if (!id || !password || !fcmToken) {
 			return res
@@ -87,19 +87,16 @@ app.get("/checkAllUsers", async (req, res) => {
 			pass = decryptPassword(pass);
 			const isValid = await checkCredentials(id, pass);
 			if (!isValid) {
-				await sendPushNotification(
-					"Your have changed your password",
-					"please re-register your credentials",
-					token
-				);
+				await sendPushNotification("password_changed", token);
 				continue;
 			}
 			// Check attendance for today
 			const absentPeriods = await scrapeTodayAbsentsWithFaculty(id, pass);
-			const fcmres = await sendPushNotification(absentPeriods, token) ? " sent":" not-sent" ;
-			console.log(id+" : "+absentPeriods+fcmres);
+			const fcmres = (await sendPushNotification(absentPeriods, token))
+				? " sent"
+				: " not-sent";
+			console.log(id + " : " + absentPeriods + fcmres);
 		}
-
 	} catch (error) {
 		console.error("Error checking all users:", error);
 		// res.status(500).json({ error: err.message });

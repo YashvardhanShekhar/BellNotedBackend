@@ -30,7 +30,19 @@ export async function sendPushNotification(absentPeriods, token) {
 
 		// Build notification text
 		let title, body;
-		if (absentPeriods.length > 0) {
+
+		// Handle boolean input (e.g., from query params).
+		if (typeof absentPeriods === "string" && absentPeriods === "password_changed") {
+			title = "Your have changed your password",
+			body = "please re-register your credentials",
+			absentPeriods = [];
+			
+		}else if (typeof absentPeriods === "string") {
+			title = "Attendance check failed";
+			body = "something went wrong. Try again";
+			absentPeriods = [];
+
+		} else if (absentPeriods.length > 0) {
 			const periods = absentPeriods.map((item) => item.period);
 			let periodsString = "";
 			if (periods.length === 1) periodsString = `lecture ${periods[0]}`;
@@ -54,7 +66,7 @@ export async function sendPushNotification(absentPeriods, token) {
 			message: {
 				token: token,
 				notification: { title, body },
-				data: { absentPeriods: JSON.stringify(absentPeriods || []) },
+				data: { 'absentPeriods': JSON.stringify(absentPeriods || []) },
 			},
 		};
 
@@ -66,27 +78,6 @@ export async function sendPushNotification(absentPeriods, token) {
 			},
 			body: JSON.stringify(message),
 		});
-
-		// message = {
-		// 	message: {
-		// 		token: token,
-		// 		notification: { title, body },
-		// 		apns: { payload: { aps: { badge: absentPeriods.length } } },
-		// 		android: {
-		// 			notification: { notificationCount: absentPeriods.length },
-		// 		},
-		// 		data: { absentPeriods: JSON.stringify(absentPeriods || []) },
-		// 	},
-		// };
-
-		// response = await fetch(FCM_ENDPOINT, {
-		// 	method: "POST",
-		// 	headers: {
-		// 		Authorization: `Bearer ${accessToken}`,
-		// 		"Content-Type": "application/json",
-		// 	},
-		// 	body: JSON.stringify(message),
-		// });
 
 		const data = await response.json();
 

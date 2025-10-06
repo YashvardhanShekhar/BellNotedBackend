@@ -129,7 +129,7 @@ export async function scrapeTodayAbsentsWithFaculty(username, password) {
 		return finalAbsentData;
 	} catch (err) {
 		console.error("Error checking credentials:", err);
-		return [];
+		return "error";
 	} finally {
 		if (browser) await browser.close();
 	}
